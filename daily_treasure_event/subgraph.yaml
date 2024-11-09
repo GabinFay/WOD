@@ -10,7 +10,7 @@ dataSources:
     source:
       address: "0xF4435c244A292a8E8D56767bf6DF9b9c4D59aEED"
       abi: DailyTreasure
-      startBlock: 33536615
+      startBlock: 43870236
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
