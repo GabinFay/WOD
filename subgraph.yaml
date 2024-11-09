@@ -1,0 +1,28 @@
+specVersion: 0.0.4
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: DailyTreasureEvent
+    network: bsc # Binance Smart Chain
+    source:
+      address: "0xF4435c244A292a8E8D56767bf6DF9b9c4D59aEED" # contract address
+      abi: DailyTreasureEvent
+      startBlock: <BLOCK_NUMBER> # The block where the contract was deployed
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      entities:
+        - ChestOpened
+        - PremiumChestOpened
+        - User
+      abis:
+        - name: DailyTreasureEvent
+          file: ./abis/DailyTreasureEvent.json
+      eventHandlers:
+        - event: ChestOpened(address,uint256)
+          handler: handleChestOpened
+        - event: PremiumChestOpened(address,uint256)
+          handler: handlePremiumChestOpened
+      file: ./src/mapping.ts
