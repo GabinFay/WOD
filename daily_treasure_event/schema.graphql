@@ -1,6 +1,13 @@
-type ExampleEntity @entity {
-  id: Bytes!
-  count: BigInt!
-  user: Bytes! # address
-  timestamp: BigInt! # uint256
+type ChestOpened @entity {
+  id: ID!
+  user: User!
+  timestamp: BigInt!
+  isPremium: Boolean!
+}
+
+type User @entity {
+  id: ID!
+  lifetimeChestCount: Int!
+  lifetimePremiumChestCount: Int!
+  chestOpens: [ChestOpened!] @derivedFrom(field: "user")
 }
