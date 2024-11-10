@@ -14,3 +14,11 @@ type User @entity {
   isPremiumUser: Boolean! @index
   chestOpens: [ChestOpened!] @derivedFrom(field: "user")
 }
+
+type DailyChestOpen @entity {
+  id: ID!
+  date: String! @index
+  regularChestCount: Int!
+  premiumChestCount: Int!
+  totalChestCount: Int!
+}

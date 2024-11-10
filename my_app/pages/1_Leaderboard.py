@@ -4,6 +4,7 @@ import pandas as pd
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 import os
+from streamlit_extras.switch_page_button import switch_page
 
 load_dotenv()
 
@@ -110,3 +111,7 @@ if data:
         st.write(df_display.to_html(escape=False, index=False), unsafe_allow_html=True)
     else:
         st.write('No data available for the selected filters.')
+
+# Add a button to navigate to the Contract Stats page
+if st.button("View Contract Stats"):
+    switch_page("Contract Stats")

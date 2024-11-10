@@ -11,6 +11,16 @@ load_dotenv()
 
 st.set_page_config(page_title="User Details", page_icon="👤")
 
+# Define the execute_query function
+def execute_query(query, variables):
+    url = os.getenv('SUBGRAPH_URL')
+    response = requests.post(url, json={'query': query, 'variables': variables})
+    if response.status_code == 200:
+        return response.json()
+    else:
+        st.error(f"Query failed with status code {response.status_code}")
+        return None
+
 USER_DETAILS_QUERY = '''
 query UserDetails($userId: ID!) {
     user(id: $userId) {
@@ -47,14 +57,52 @@ query GetChestOpens($startTime: BigInt!, $endTime: BigInt!, $user: String!, $fir
 }
 '''
 
-def execute_query(query, variables):
-    url = os.getenv('SUBGRAPH_URL')
-    response = requests.post(url, json={'query': query, 'variables': variables})
-    if response.status_code == 200:
-        return response.json()
-    else:
-        st.error(f"Query failed with status code {response.status_code}")
-        return None
+LEADERBOARD_QUERY = '''
+query GetChestLeaderboard($startTime: BigInt!, $isPremium: Boolean!) {
+    users(
+        orderBy: lifetimeTotalChestCount, 
+        orderDirection: desc, 
+        where: {
+            chestOpens_: {isPremium: $isPremium, timestamp_gte: $startTime},
+            lifetimeTotalChestCount_gt: 0
+        }
+    ) {
+        id
+        lifetimeChestCount
+        lifetimePremiumChestCount
+        lifetimeTotalChestCount
+        isPremiumUser
+    }
+}
+'''
+
+# Fetch leaderboard data to get the list of users
+def fetch_leaderboard_users():
+    start_time = int((datetime.now() - timedelta(days=7)).timestamp())  # Example: last 7 days
+    variables = {'startTime': start_time, 'isPremium': False}  # Adjust as needed
+    data = execute_query(LEADERBOARD_QUERY, variables)
+    if data:
+        return [user['id'] for user in data.get('data', {}).get('users', [])]
+    return []
+
+# Initialize session state for user navigation
+if 'user_index' not in st.session_state:
+    st.session_state.user_index = 0
+
+# Fetch the list of users
+user_list = fetch_leaderboard_users()
+
+# Navigation buttons
+col1, col2, col3 = st.columns([1, 2, 1])
+with col1:
+    if st.button("← Previous User") and st.session_state.user_index > 0:
+        st.session_state.user_index -= 1
+with col3:
+    if st.button("Next User →") and st.session_state.user_index < len(user_list) - 1:
+        st.session_state.user_index += 1
+
+# Get the current user_id from the list
+user_id = user_list[st.session_state.user_index] if user_list else None
 
 def fetch_all_chest_opens(startTime, endTime, user):
     all_chest_opens = []
@@ -82,9 +130,6 @@ def fetch_all_chest_opens(startTime, endTime, user):
 # Back button
 if st.button("← Back to Leaderboard"):
     switch_page("Leaderboard")
-
-# Get user_id from query parameters
-user_id = st.query_params.get("user_id")
 
 if not user_id:
     st.warning("No user selected. Please select a user from the leaderboard.")

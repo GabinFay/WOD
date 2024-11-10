@@ -1,9 +1,0 @@
-query GetChestLeaderboard($startTime: BigInt!, $isPremium: Boolean!) {
-    users(orderBy: lifetimeChestCount, orderDirection: desc, where: {chestOpens_: {isPremium: $isPremium, timestamp_gte: $startTime}}) {
-      id
-      lifetimeChestCount
-      lifetimePremiumChestCount
-      lifetimeTotalChestCount
-    }
-}
-  
