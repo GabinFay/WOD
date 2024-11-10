@@ -11,10 +11,28 @@ load_dotenv()
 st.set_page_config(page_title="Chest Opening Heatmaps", page_icon="📅")
 
 CHEST_OPENS_QUERY = '''
-query GetChestOpens($startTime: BigInt!) {
-    chestOpeneds(orderBy: timestamp, orderDirection: asc, where: {timestamp_gte: $startTime}) {
+query GetChestOpens($startTime: BigInt!, $endTime: BigInt!, $user: String!) {
+    chestOpeneds(
+        orderBy: timestamp, 
+        orderDirection: asc, 
+        where: {
+            timestamp_gte: $startTime,
+            timestamp_lte: $endTime,
+            user: $user
+        }
+    ) {
         timestamp
         isPremium
+        user
+    }
+}
+'''
+
+# Add query to fetch users
+USERS_QUERY = '''
+query GetUsers {
+    users {
+        id
     }
 }
 '''
@@ -28,55 +46,62 @@ def execute_query(query, variables):
         st.error(f"Query failed with status code {response.status_code}")
         return None
 
-st.title('Chest Opening Heatmaps')
+st.title('User Chest Opening Heatmaps')
 
-# Date range selection
-end_date = st.date_input('End date', datetime.now().date())
-start_date = st.date_input('Start date', end_date - timedelta(days=30))
+# Fetch users first
+users_result = execute_query(USERS_QUERY, {})
+if users_result and 'data' in users_result:
+    users = [user['id'] for user in users_result['data']['users']]
+    selected_user = st.selectbox('Select User', users)
 
-# Convert dates to timestamps
-start_timestamp = int(datetime.combine(start_date, datetime.min.time()).timestamp())
-end_timestamp = int(datetime.combine(end_date, datetime.max.time()).timestamp())
+    # Set date range (last 30 days)
+    end_date = datetime.now().date()
+    start_date = end_date - timedelta(days=30)
 
-# Fetch chest opening data
-variables = {'startTime': start_timestamp}
+    # Fetch chest opening data for selected user
+    variables = {
+        'startTime': int(datetime.combine(start_date, datetime.min.time()).timestamp()),
+        'endTime': int(datetime.combine(end_date, datetime.max.time()).timestamp()),
+        'user': selected_user
+    }
 
-# Execute the query
-result = execute_query(CHEST_OPENS_QUERY, variables)
+    # Execute the query
+    result = execute_query(CHEST_OPENS_QUERY, variables)
 
-# Process the result
-if result and 'data' in result:
-    chest_opens = result['data'].get('chestOpeneds', [])
-    if chest_opens:
-        # Convert timestamps to datetime and create DataFrame
-        df = pd.DataFrame(chest_opens)
-        df['timestamp'] = pd.to_datetime(df['timestamp'].astype(int), unit='s')
-        df['hour'] = df['timestamp'].dt.hour
-        df['day'] = df['timestamp'].dt.day_name()
-        
-        # Create separate heatmaps for regular and premium chests
-        st.subheader(f'Total Chest Opens: {len(chest_opens)}')
-        
-        # Aggregate data for heatmap
-        heatmap_data = df.groupby(['day', 'hour', 'isPremium']).size().reset_index(name='count')
-        
-        # Create heatmaps for both chest types
-        for chest_type in [False, True]:
-            chest_data = heatmap_data[heatmap_data['isPremium'] == chest_type]
-            pivot_table = chest_data.pivot(index='day', columns='hour', values='count').fillna(0)
+    # Process the result
+    if result and 'data' in result:
+        chest_opens = result['data'].get('chestOpeneds', [])
+        if chest_opens:
+            df = pd.DataFrame(chest_opens)
+            df['timestamp'] = pd.to_datetime(df['timestamp'].astype(int), unit='s')
+            df['date'] = df['timestamp'].dt.date
+            df['hour'] = df['timestamp'].dt.hour
             
-            # Order days correctly
-            days_order = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-            pivot_table = pivot_table.reindex(days_order)
+            st.subheader(f'Total Chest Opens for {selected_user}: {len(df)}')
             
-            fig = px.imshow(pivot_table,
-                           title=f'{"Premium" if chest_type else "Regular"} Chest Opens Heatmap',
-                           labels=dict(x='Hour of Day', y='Day of Week', color='Number of Opens'),
-                           aspect='auto')
-            st.plotly_chart(fig)
-    else:
-        st.warning("No chest opens found in the selected time period")
+            # Create heatmaps for both chest types
+            for chest_type in [False, True]:
+                chest_data = df[df['isPremium'] == chest_type]
+                pivot_data = pd.pivot_table(
+                    chest_data,
+                    values='timestamp',
+                    index='date',
+                    columns='hour',
+                    aggfunc='count',
+                    fill_value=0
+                ).reindex(columns=range(24), fill_value=0)
+                
+                fig = px.imshow(
+                    pivot_data,
+                    title=f'{"Premium" if chest_type else "Regular"} Chest Opens - Last 30 Days',
+                    labels=dict(x='Hour of Day', y='Date', color='Number of Opens'),
+                    aspect='auto',
+                    x=list(range(24))
+                )
+                st.plotly_chart(fig)
+        else:
+            st.warning(f"No chest opens found for {selected_user} in the last 30 days")
 else:
-    st.error("Failed to fetch chest opening data or invalid response format")
+    st.error("Failed to fetch users data")
 
 # ... rest of the file remains the same ...
