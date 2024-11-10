@@ -11,5 +11,6 @@ type User @entity {
   lifetimeChestCount: Int!
   lifetimePremiumChestCount: Int!
   lifetimeTotalChestCount: Int!
+  isPremiumUser: Boolean! @index
   chestOpens: [ChestOpened!] @derivedFrom(field: "user")
 }

@@ -23,6 +23,7 @@ query GetChestLeaderboard($startTime: BigInt!, $isPremium: Boolean!) {
         lifetimeChestCount
         lifetimePremiumChestCount
         lifetimeTotalChestCount
+        isPremiumUser
     }
 }
 '''
@@ -34,6 +35,7 @@ query UserStats($userId: ID!) {
         lifetimeChestCount
         lifetimePremiumChestCount
         lifetimeTotalChestCount
+        isPremiumUser
         chestOpens(orderBy: timestamp, orderDirection: desc) {
             timestamp
             isPremium
@@ -56,6 +58,7 @@ st.title('Chest Leaderboard')
 # Filter options
 days = st.slider('Number of days to look back', 1, 30, 7)
 is_premium = st.radio('Chest Type', ('Premium', 'Regular'))
+premium_users_only = st.checkbox('Show Premium Users Only')
 
 # Calculate start time based on the number of days
 start_time = int((datetime.now() - timedelta(days=days)).timestamp())
@@ -73,6 +76,10 @@ if data:
     if users:
         df = pd.DataFrame(users)
         
+        # Filter for premium users if checkbox is selected
+        if premium_users_only:
+            df = df[df['isPremiumUser'] == True]
+        
         # Sort based on user selection
         if sort_by == 'Total Chests':
             df = df.sort_values('lifetimeTotalChestCount', ascending=False)
@@ -88,7 +95,8 @@ if data:
             'id': 'User Address',
             'lifetimeChestCount': 'Regular Chests',
             'lifetimePremiumChestCount': 'Premium Chests',
-            'lifetimeTotalChestCount': 'Total Chests'
+            'lifetimeTotalChestCount': 'Total Chests',
+            'isPremiumUser': 'Premium User'
         })
         
         st.dataframe(df_display)
@@ -96,7 +104,7 @@ if data:
         st.write('No data available for the selected filters.')
 
 # User selection
-user_ids = [user['id'] for user in users]
+user_ids = df['id'].tolist()  # Use filtered df instead of users list
 selected_user = st.selectbox('Select a user to view history', user_ids)
 
 if selected_user:
@@ -105,6 +113,7 @@ if selected_user:
         user_info = user_data.get('data', {}).get('user', {})
         if user_info:
             st.subheader(f"User: {user_info['id']}")
+            st.write(f"Premium User: {'Yes' if user_info['isPremiumUser'] else 'No'}")
             st.write(f"Lifetime Chest Count: {user_info['lifetimeChestCount']}")
             st.write(f"Lifetime Premium Chest Count: {user_info['lifetimePremiumChestCount']}")
             st.write(f"Lifetime Total Chest Count: {user_info['lifetimeTotalChestCount']}")

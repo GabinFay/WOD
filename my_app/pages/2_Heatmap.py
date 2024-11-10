@@ -45,12 +45,38 @@ variables = {'startTime': start_timestamp}
 result = execute_query(CHEST_OPENS_QUERY, variables)
 
 # Process the result
-if result:
-    chest_opens = result['data']['chestOpeneds']
-    df = pd.DataFrame(chest_opens)
-    fig = px.scatter(df, x='timestamp', y='isPremium', title='Chest Opening Heatmap')
-    st.plotly_chart(fig)
+if result and 'data' in result:
+    chest_opens = result['data'].get('chestOpeneds', [])
+    if chest_opens:
+        # Convert timestamps to datetime and create DataFrame
+        df = pd.DataFrame(chest_opens)
+        df['timestamp'] = pd.to_datetime(df['timestamp'].astype(int), unit='s')
+        df['hour'] = df['timestamp'].dt.hour
+        df['day'] = df['timestamp'].dt.day_name()
+        
+        # Create separate heatmaps for regular and premium chests
+        st.subheader(f'Total Chest Opens: {len(chest_opens)}')
+        
+        # Aggregate data for heatmap
+        heatmap_data = df.groupby(['day', 'hour', 'isPremium']).size().reset_index(name='count')
+        
+        # Create heatmaps for both chest types
+        for chest_type in [False, True]:
+            chest_data = heatmap_data[heatmap_data['isPremium'] == chest_type]
+            pivot_table = chest_data.pivot(index='day', columns='hour', values='count').fillna(0)
+            
+            # Order days correctly
+            days_order = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+            pivot_table = pivot_table.reindex(days_order)
+            
+            fig = px.imshow(pivot_table,
+                           title=f'{"Premium" if chest_type else "Regular"} Chest Opens Heatmap',
+                           labels=dict(x='Hour of Day', y='Day of Week', color='Number of Opens'),
+                           aspect='auto')
+            st.plotly_chart(fig)
+    else:
+        st.warning("No chest opens found in the selected time period")
 else:
-    st.error("Failed to fetch chest opening data")
+    st.error("Failed to fetch chest opening data or invalid response format")
 
 # ... rest of the file remains the same ...

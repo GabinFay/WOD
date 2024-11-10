@@ -8,7 +8,7 @@ dataSources:
     source:
       address: "0xF4435c244A292a8E8D56767bf6DF9b9c4D59aEED" # contract address
       abi: DailyTreasureEvent
-      startBlock: 43839105 # The block where the contract was deployed
+      startBlock: 42834606 # The block where the contract was deployed
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -25,4 +25,8 @@ dataSources:
           handler: handleChestOpened
         - event: PremiumChestOpened(indexed address,uint256)
           handler: handlePremiumChestOpened
+        - event: PremiumUserAdded(address)
+          handler: handlePremiumUserAdded
+        - event: PremiumUserRemoved(address)
+          handler: handlePremiumUserRemoved
       file: ./src/mappings.ts

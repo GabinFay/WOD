@@ -8,7 +8,7 @@ load_dotenv()
 
 CHEST_OPENS_QUERY = '''
 query GetChestOpens($startTime: BigInt!) {
-    chestOpeneds(orderBy: timestamp, orderDirection: asc, where: {timestamp_gte: $startTime}) {
+    chestOpeneds: chestOpeneds(orderBy: timestamp, orderDirection: asc, where: {timestamp_gte: $startTime}) {
         timestamp
         isPremium
     }
@@ -48,7 +48,7 @@ def main():
     
     if result:
         if 'data' in result:
-            chest_opens = result['data'].get('chestOpens', [])
+            chest_opens = result['data'].get('chestOpeneds', [])
             print(f"\nFound {len(chest_opens)} chest opens")
             if chest_opens:
                 print("\nFirst chest open:", chest_opens[0])
