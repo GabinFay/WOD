@@ -8,9 +8,11 @@ export function handleChestOpened(event: ChestOpenedEvent): void {
     user = new User(event.params.user.toHex());
     user.lifetimeChestCount = 0;
     user.lifetimePremiumChestCount = 0;
+    user.lifetimeTotalChestCount = 0;
   }
 
   user.lifetimeChestCount = user.lifetimeChestCount + 1;
+  user.lifetimeTotalChestCount = user.lifetimeTotalChestCount + 1;
   user.save();
 
   let chestOpened = new ChestOpened(event.transaction.hash.toHex());
@@ -26,9 +28,11 @@ export function handlePremiumChestOpened(event: PremiumChestOpenedEvent): void {
     user = new User(event.params.user.toHex());
     user.lifetimeChestCount = 0;
     user.lifetimePremiumChestCount = 0;
+    user.lifetimeTotalChestCount = 0;
   }
 
   user.lifetimePremiumChestCount = user.lifetimePremiumChestCount + 1;
+  user.lifetimeTotalChestCount = user.lifetimeTotalChestCount + 1;
   user.save();
 
   let chestOpened = new ChestOpened(event.transaction.hash.toHex());

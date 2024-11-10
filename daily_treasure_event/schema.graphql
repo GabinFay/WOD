@@ -10,5 +10,6 @@ type User @entity {
   id: ID!
   lifetimeChestCount: Int!
   lifetimePremiumChestCount: Int!
+  lifetimeTotalChestCount: Int!
   chestOpens: [ChestOpened!] @derivedFrom(field: "user")
 }

@@ -3,6 +3,7 @@ query UserStats($userId: ID!) {
     id
     lifetimeChestCount
     lifetimePremiumChestCount
+    lifetimeTotalChestCount
     chestOpens(orderBy: timestamp, orderDirection: desc) {
       timestamp
       isPremium

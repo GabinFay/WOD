@@ -3,6 +3,7 @@ query GetChestLeaderboard($startTime: BigInt!, $isPremium: Boolean!) {
       id
       lifetimeChestCount
       lifetimePremiumChestCount
+      lifetimeTotalChestCount
     }
 }
   
