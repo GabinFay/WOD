@@ -9,7 +9,7 @@ import {
 import { Address, BigInt } from "@graphprotocol/graph-ts"
 import { ExampleEntity } from "../generated/schema"
 import { ChestOpened } from "../generated/DailyTreasure/DailyTreasure"
-import { handleChestOpened } from "../src/daily-treasure"
+import { handleChestOpened } from "../src/mappings"
 import { createChestOpenedEvent } from "./daily-treasure-utils"
 
 // Tests structure (matchstick-as >=0.5.0)

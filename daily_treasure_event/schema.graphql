@@ -6,6 +6,7 @@ type ChestOpened @entity {
 }
 
 type User @entity {
+  "The user's Ethereum address in hex format"
   id: ID!
   lifetimeChestCount: Int!
   lifetimePremiumChestCount: Int!

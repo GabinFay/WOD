@@ -8,10 +8,10 @@ dataSources:
     source:
       address: "0xF4435c244A292a8E8D56767bf6DF9b9c4D59aEED" # contract address
       abi: DailyTreasureEvent
-      startBlock: <BLOCK_NUMBER> # The block where the contract was deployed
+      startBlock: 43839105 # The block where the contract was deployed
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.5
+      apiVersion: 0.0.6
       language: wasm/assemblyscript
       entities:
         - ChestOpened
@@ -21,8 +21,8 @@ dataSources:
         - name: DailyTreasureEvent
           file: ./abis/DailyTreasureEvent.json
       eventHandlers:
-        - event: ChestOpened(address,uint256)
+        - event: ChestOpened(indexed address,uint256)
           handler: handleChestOpened
-        - event: PremiumChestOpened(address,uint256)
+        - event: PremiumChestOpened(indexed address,uint256)
           handler: handlePremiumChestOpened
-      file: ./src/mapping.ts
+      file: ./src/mappings.ts

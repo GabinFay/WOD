@@ -1,0 +1,11 @@
+query GetLeaderboard {
+  users(
+    orderBy: lifetimeChestCount
+    orderDirection: desc
+    where: {chestOpens_: {isPremium: false, timestamp_gte: 1731103200}}
+  ) {
+    id
+    lifetimeChestCount
+    lifetimePremiumChestCount
+  }
+}

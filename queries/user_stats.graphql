@@ -1,0 +1,11 @@
+query UserStats($userId: ID!) {
+  user(id: $userId) {
+    id
+    lifetimeChestCount
+    lifetimePremiumChestCount
+    chestOpens(orderBy: timestamp, orderDirection: desc) {
+      timestamp
+      isPremium
+    }
+  }
+}
