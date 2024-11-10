@@ -1,4 +1,5 @@
 [server]
-headless = true
+headless = false
 port = 8080
-enableCORS = false
+enableCORS = true
+enableXsrfProtection = false

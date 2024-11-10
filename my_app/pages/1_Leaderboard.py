@@ -99,33 +99,14 @@ if data:
             'isPremiumUser': 'Premium User'
         })
         
-        st.dataframe(df_display)
+        # Make the dataframe clickable and add BSCScan link
+        def make_clickable(address):
+            app_link = f'<a href="User_Details?user_id={address}">{address}</a>'
+            # Using BSCScan or Binance logo image
+            bscscan_link = f'<a href="https://www.bscscan.com/address/{address}" target="_blank"><img src="https://bscscan.com/images/favicon.ico" width="16" height="16" style="vertical-align: middle;"></a>'
+            return f'{app_link} {bscscan_link}'
+        
+        df_display['User Address'] = df_display['User Address'].apply(make_clickable)
+        st.write(df_display.to_html(escape=False, index=False), unsafe_allow_html=True)
     else:
         st.write('No data available for the selected filters.')
-
-# User selection
-user_ids = df['id'].tolist()  # Use filtered df instead of users list
-selected_user = st.selectbox('Select a user to view history', user_ids)
-
-if selected_user:
-    user_data = execute_query(USER_HISTORY_QUERY, {'userId': selected_user})
-    if user_data:
-        user_info = user_data.get('data', {}).get('user', {})
-        if user_info:
-            st.subheader(f"User: {user_info['id']}")
-            st.write(f"Premium User: {'Yes' if user_info['isPremiumUser'] else 'No'}")
-            st.write(f"Lifetime Chest Count: {user_info['lifetimeChestCount']}")
-            st.write(f"Lifetime Premium Chest Count: {user_info['lifetimePremiumChestCount']}")
-            st.write(f"Lifetime Total Chest Count: {user_info['lifetimeTotalChestCount']}")
-
-            # Display chest opening history
-            chest_opens = user_info.get('chestOpens', [])
-            if chest_opens:
-                history_df = pd.DataFrame(chest_opens)
-                history_df['timestamp'] = pd.to_datetime(history_df['timestamp'], unit='s')
-                st.subheader('Chest Opening History')
-                st.dataframe(history_df)
-            else:
-                st.write('No chest opening history available.')
-        else:
-            st.write('User not found.')
