@@ -12,7 +12,7 @@ st.set_page_config(page_title="Chest Opening Heatmaps", page_icon="📅")
 
 CHEST_OPENS_QUERY = '''
 query GetChestOpens($startTime: BigInt!) {
-    chestOpens(orderBy: timestamp, orderDirection: asc, where: {timestamp_gte: $startTime}) {
+    chestOpeneds(orderBy: timestamp, orderDirection: asc, where: {timestamp_gte: $startTime}) {
         timestamp
         isPremium
     }
@@ -46,7 +46,7 @@ result = execute_query(CHEST_OPENS_QUERY, variables)
 
 # Process the result
 if result:
-    chest_opens = result['data']['chestOpens']
+    chest_opens = result['data']['chestOpeneds']
     df = pd.DataFrame(chest_opens)
     fig = px.scatter(df, x='timestamp', y='isPremium', title='Chest Opening Heatmap')
     st.plotly_chart(fig)
